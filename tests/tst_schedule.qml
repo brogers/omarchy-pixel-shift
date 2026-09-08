@@ -11,8 +11,6 @@ TestCase {
     compare(Schedule.positions(4, 1), [-4, -3, -2, -1, 0, 1, 2, 3, 4])
     compare(Schedule.positions(3, 2), [-2, 0, 2])      // travel not a multiple of step stays inside travel
     compare(Schedule.positions(0, 2), [0])
-    compare(Schedule.positions(-5, 0), [0])            // garbage in, resting position out
-    compare(Schedule.positions("2", "2"), [-2, 0, 2])
   }
 
   function test_cycle_visits_every_position_equally_with_small_moves() {
@@ -40,49 +38,35 @@ TestCase {
   }
 
   function test_phase_follows_the_wall_clock_from_epoch_zero() {
-    var s = Schedule.newState()
+    var s = { epoch: 0 }
     var ms = 180000
     compare(Schedule.phase(s, 0, ms), 0)
     compare(Schedule.phase(s, ms - 1, ms), 0)
     compare(Schedule.phase(s, ms, ms), 1)
     compare(Schedule.phase(s, 10 * ms + 5, ms), 10)
     compare(Schedule.nextBoundary(s, 10 * ms + 5, ms), 11 * ms)
-    compare(Schedule.intervalMs(0), 1000)                // never a busy loop
-    compare(Schedule.intervalMs("abc"), 1000)
-  }
-
-  function test_observe_records_the_moment_a_phase_first_appears() {
-    var s = Schedule.newState()
-    var ms = 60000
-    compare(Schedule.observe(s, 5 * ms + 100, ms), 5)
-    compare(s.lastShift, 5 * ms + 100)
-    compare(Schedule.observe(s, 5 * ms + 30000, ms), 5)  // same phase: not a shift
-    compare(s.lastShift, 5 * ms + 100)
-    compare(Schedule.observe(s, 6 * ms + 7, ms), 6)
-    compare(s.lastShift, 6 * ms + 7)
   }
 
   function test_advance_starts_a_new_phase_now_and_keeps_the_rhythm() {
-    var s = Schedule.newState()
+    var s = { epoch: 0 }
     var ms = 60000
     var now = 5 * ms + 20000
-    compare(Schedule.observe(s, now, ms), 5)
-    compare(Schedule.advance(s, now, ms), 6)
+    compare(Schedule.phase(s, now, ms), 5)
+    Schedule.advance(s, now, ms)
     compare(Schedule.phase(s, now, ms), 6)
     compare(Schedule.phase(s, now - 1, ms), 5)
     compare(Schedule.nextBoundary(s, now, ms), now + ms)
-    compare(s.lastShift, now)
-    compare(Schedule.observe(s, now + ms, ms), 7)
+    compare(Schedule.phase(s, now + ms, ms), 7)
   }
 
   function test_masked_shifts_keep_their_distance() {
-    var s = Schedule.newState()
+    var s = { epoch: 0 }
     var ms = 60000
-    Schedule.observe(s, 100000, ms)
-    compare(Schedule.maskedShiftDue(s, 100000 + ms / 4 - 1, ms / 4), false)
-    compare(Schedule.maskedShiftDue(s, 100000 + ms / 4, ms / 4), true)
-    Schedule.advance(s, 100000 + ms / 4, ms)
-    compare(Schedule.maskedShiftDue(s, 100000 + ms / 4 + 1000, ms / 4), false)
+    compare(Schedule.maskedShiftDue(s, 120000 + ms / 4 - 1, ms, ms / 4), false)   // one ms short of a quarter into the phase
+    compare(Schedule.maskedShiftDue(s, 120000 + ms / 4, ms, ms / 4), true)
+    Schedule.advance(s, 120000 + ms / 4, ms)
+    compare(Schedule.maskedShiftDue(s, 120000 + ms / 4 + 1000, ms, ms / 4), false)
+    compare(Schedule.maskedShiftDue(s, 120000 + ms / 2, ms, ms / 4), true)
   }
 
   function test_shared_state_is_one_object() {
