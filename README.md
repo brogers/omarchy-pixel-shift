@@ -8,6 +8,8 @@ instead of etching into one. The steps are small enough and rare enough that
 you will not see them, and nothing about your layout changes: the bar rests
 exactly where it rested before.
 
+<p align="center"><img src="preview.png" alt="The bar at its three edge positions, with red lines marking the resting edges" width="900"></p>
+
 ## How it works
 
 The plugin is a bar widget that draws nothing and takes no space. From
