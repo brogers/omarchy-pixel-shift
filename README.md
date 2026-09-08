@@ -122,9 +122,9 @@ was. Nothing is written anywhere except the plugin's own entry in
 
 ## Develop
 
+Clone this repository, then run the checks from its root:
+
 ```sh
-git clone https://github.com/evindor/omarchy-pixel-shift.git
-cd omarchy-pixel-shift
 bin/test      # qmltestrunner unit tests, omarchy plugin validate, qmllint
 ```
 
