@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "io.github.evindor.pixel-shift",
+  "name": "Pixel Shift",
+  "version": "1.0.0",
+  "author": "Arseniy Zarechnev",
+  "license": "MIT",
+  "description": "OLED burn-in protection for the bar: walks its edge padding and center a few pixels back and forth, too slowly to notice",
+  "homepage": "https://github.com/evindor/omarchy-pixel-shift",
+  "kinds": ["bar-widget"],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Pixel Shift",
+    "description": "Invisible. Slowly shifts the bar's widgets by a few pixels so static pixels on an OLED panel wear evenly.",
+    "category": "Layout",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "intervalSec": 180,
+      "edgeTravel": 2,
+      "edgeStep": 2,
+      "centerTravel": 1,
+      "shiftOnWorkspaceSwitch": true
+    },
+    "schema": [
+      {
+        "key": "intervalSec",
+        "type": "integer",
+        "label": "Shift interval (seconds)",
+        "min": 10,
+        "max": 3600,
+        "step": 10,
+        "defaultValue": 180,
+        "description": "How often the bar takes its next step. OLED monitors and TVs shift their picture every 2 to 3 minutes."
+      },
+      {
+        "key": "edgeTravel",
+        "type": "integer",
+        "label": "Edge travel (pixels)",
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "defaultValue": 2,
+        "description": "How far the left and right sections move in from, and out to, their resting position. 2 gives a 5 pixel path. 0 leaves the edges alone."
+      },
+      {
+        "key": "edgeStep",
+        "type": "integer",
+        "label": "Edge step (pixels)",
+        "min": 1,
+        "max": 4,
+        "step": 1,
+        "defaultValue": 2,
+        "description": "Size of one edge move. Smaller steps are harder to notice and take more steps to cover the same path."
+      },
+      {
+        "key": "centerTravel",
+        "type": "integer",
+        "label": "Center travel (pixels)",
+        "min": 0,
+        "max": 4,
+        "step": 1,
+        "defaultValue": 1,
+        "description": "How far the centered module moves off center, one pixel at a time. 1 gives a 3 pixel path. 0 leaves the center alone."
+      },
+      {
+        "key": "shiftOnWorkspaceSwitch",
+        "type": "boolean",
+        "label": "Shift on workspace switch",
+        "defaultValue": true,
+        "description": "Take the next step when the workspace changes, where the bar redraws anyway and the move is hidden. Never more often than a quarter of the interval."
+      }
+    ]
+  }
+}

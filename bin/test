@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Unit tests for the schedule, manifest validation, and qmllint for the widget.
+set -euo pipefail
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+OMARCHY_PATH="${OMARCHY_PATH:-/usr/share/omarchy}"
+
+(cd "$ROOT/tests" && QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software /usr/lib/qt6/bin/qmltestrunner -silent -input .)
+omarchy plugin validate "$ROOT"
+# qmllint resolves `import qs.Ui` through a directory literally named qs.
+LINT_PATH="$(mktemp -d)"
+trap 'rm -rf "$LINT_PATH"' EXIT
+ln -s "$OMARCHY_PATH/shell" "$LINT_PATH/qs"
+/usr/lib/qt6/bin/qmllint -I /usr/lib/qt6/qml -I "$LINT_PATH" "$ROOT/BarWidget.qml"
+echo "ok"
