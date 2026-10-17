@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.evindor.pixel-shift",
   "name": "Pixel Shift",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Arseniy Zarechnev",
   "license": "MIT",
   "description": "OLED burn-in protection for the bar: walks its edge padding and center a few pixels back and forth, too slowly to notice",

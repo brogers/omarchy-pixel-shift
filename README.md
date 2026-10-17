@@ -20,7 +20,7 @@ pins to the screen and nudges them together:
 | --- | --- | --- | --- |
 | Left section | 8 px from the left edge | padding grows and shrinks, the section slides in and out | 6, 8, 10 px: a 5 px path |
 | Right section | 8 px from the right edge | the same padding, at the same moment, so both sides move inward and outward symmetrically | 6, 8, 10 px: a 5 px path |
-| Center | pinned to the middle of the screen (`centerAnchor`, or the whole center group without one) | its center offset | -1, 0, +1 px: a 3 px path |
+| Center | the middle of the bar: the center section, with `centerBegin` and `centerEnd` hanging off its sides | the whole group, slid along the bar | -1, 0, +1 px: a 3 px path |
 
 Both ends of the bar step by 2 px at a time; the center, which is mostly thin
 text and is the part your eye lands on, moves 1 px at a time. On a vertical
@@ -63,8 +63,10 @@ Sources: [LG on Screen Shift and the OLED care suite](https://www.reviewed.com/t
 
 ## Install
 
-Requires Omarchy 4.0.2 or newer (the plugin shell) with the built-in bar or an
-unmodified clone of it.
+Requires the Omarchy 4.0 plugin shell with the built-in bar or an unmodified
+clone of it. It works with the scoped bar API that Omarchy 4.0 gives
+third-party widgets (tested on 4.0.0.r7033), and with earlier plugin shells
+that handed widgets the bar itself.
 
 ```sh
 omarchy plugin add https://github.com/evindor/omarchy-pixel-shift.git --enable
@@ -113,10 +115,12 @@ was. Nothing is written anywhere except the plugin's own entry in
 - A few pixels of travel is what panel firmware does too, and it is a
   mitigation, not a cure. A bar that is transparent, dim, or hidden when not
   needed helps more than any amount of shifting.
-- The plugin knows the layout of the built-in bar (its left and right section
-  lists and its centered module). A third-party full bar, or a clone with a
-  changed layout, is left alone: the plugin finds nothing to move and does
-  nothing.
+- The plugin knows the layout of the built-in bar. Third-party widgets get only
+  a scoped view of the bar, with no access to its sections, so the plugin
+  finds the left and right section lists and the center group by walking up
+  the scene from its own place in the bar. A third-party full bar, or a clone
+  with a changed layout, is left alone: the plugin finds nothing to move and
+  does nothing.
 - No external dependencies, no processes, no network, no sudo. Like every
   Omarchy plugin it runs unsandboxed inside your shell with your permissions.
 
@@ -137,11 +141,18 @@ Layout:
 - `tests/tst_schedule.qml`: unit tests for the schedule.
 
 To iterate on a local checkout, copy it into place (Omarchy refuses symlinks
-inside plugin folders); the shell reloads the plugin on save:
+inside plugin folders), then restart the shell. The shell does reload a
+changed plugin on its own, but it keeps running the code it first loaded, so
+an edit only takes effect after a restart:
 
 ```sh
 rsync -a --delete --exclude .git ./ ~/.config/omarchy/plugins/io.github.evindor.pixel-shift/
+omarchy restart shell
 ```
+
+A fresh install has to be picked up once with `omarchy-shell shell
+rescanPlugins` before `omarchy plugin enable` knows it. Disabling and enabling
+the plugin resets its settings to the defaults.
 
 To watch it work, set a short interval and compare screenshots of the bar:
 

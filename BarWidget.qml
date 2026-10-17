@@ -117,11 +117,55 @@ BarWidget {
     touched.push({ item: item, prop: prop, edge: edge })
   }
 
+  // The item that holds one bar surface's sections: the ancestor of this
+  // widget with both a left and a right section list among its children.
+  // Section lists are told apart from the slots inside them by their `keys`.
+  function barContent() {
+    for (var item = root.parent; item; item = item.parent) {
+      var kids = item.children
+      var left = false, right = false
+      for (var i = 0; i < kids.length; i++) {
+        if (kids[i].keys === undefined) continue
+        if (kids[i].region === "left") left = true
+        else if (kids[i].region === "right") right = true
+      }
+      if (left && right) return item
+    }
+    return null
+  }
+
+  // Omarchy 4.0 hands a third-party widget a scoped `bar` with no slots, but
+  // the widget still sits in the bar's scene, so the parts to move are found
+  // from there instead: the left and right section lists, and the item that
+  // places the center box and the lists hanging off it (CenterSections). That
+  // item fills the bar and binds its children's x/y, so it is moved as a
+  // whole through its fill margins rather than by touching those bindings.
+  // The copy drawn beside the right section under a display notch already
+  // follows the right section and is left alone.
+  function applyScene() {
+    var content = barContent()
+    if (!content) return
+    var edge = root.edgeBase + root.edgeOffset
+    var kids = content.children
+    for (var i = 0; i < kids.length; i++) {
+      var kid = kids[i]
+      if (kid.keys !== undefined && kid.region === "left") poke(kid, root.vertical ? "topMargin" : "leftMargin", edge, true)
+      else if (kid.keys !== undefined && kid.region === "right") poke(kid, root.vertical ? "bottomMargin" : "rightMargin", edge, true)
+      var inner = kid.children
+      for (var j = 0; j < inner.length; j++) {
+        var sections = inner[j]
+        if (sections.besideRight !== false || !sections.anchors.fill) continue
+        poke(sections, root.vertical ? "topMargin" : "leftMargin", root.centerOffset, false)
+        poke(sections, root.vertical ? "bottomMargin" : "rightMargin", -root.centerOffset, false)
+      }
+    }
+  }
+
   function apply() {
     // The base class types `bar` as a bare QtObject; a bar without slots is
-    // one this plugin leaves alone.
+    // the scoped one third-party widgets get.
     var slots = root.bar ? root.bar.moduleSlots : null // qmllint disable missing-property
-    if (!Array.isArray(slots)) return
+    if (!Array.isArray(slots)) return applyScene()
     var edge = root.edgeBase + root.edgeOffset
     var centerProp = root.vertical ? "verticalCenterOffset" : "horizontalCenterOffset"
     var seen = []
